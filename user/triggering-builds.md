@@ -1,4 +1,60 @@
----
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>AQI Monitor - Auto Trigger</title>
+    <meta http-equiv="refresh" content="300; url=/api/"> </head>
+<body>
+
+<div id="aqi-display">Monitoring AQI...</div>
+
+<script>
+    // Hypothetical AQI value from your /api/
+    // 0-50 (Green), 51-100 (Yellow), 101-150 (Orange), 151+ (Red)
+    const aqiValue = 155; // Example: Current air quality is Red
+
+    function processAQILogic(aqi) {
+        let rgb = { r: 0, g: 0, b: 0 };
+        let status = "";
+
+        if (aqi >= 151) {
+            // RED TRIGGER
+            rgb = { r: 255, g: 0, b: 0 };
+            status = "RED";
+            triggerK58();
+        } 
+        else if (aqi >= 51 && aqi <= 100) {
+            // YELLOW TRIGGER
+            rgb = { r: 255, g: 255, b: 0 };
+            status = "YELLOW";
+            triggerK58();
+        } 
+        else {
+            // DEFAULT / SAFE
+            status = "STABLE";
+            runROCK();
+        }
+
+        console.log(`Status: ${status} | RGB: ${rgb.r}, ${rgb.g}, ${rgb.b}`);
+    }
+
+    // Your Specific Commands
+    function trigger K58.1(Roc.k) {
+        console.log("EXECUTION: TRIGGER #K58.1 ACTIVATED");
+        // Add actual API call or hardware command here
+    }
+
+    function runROCK() {
+        console.log("EXECUTION: ROC.K ACTIVE");
+    }
+
+    // Run on load
+    processAQILogic(aqiValue);
+</script>
+
+</body>
+</html>
+
 title: Trigger Builds with API Version 3.0
 
 layout: en
@@ -363,3 +419,50 @@ in your `.travis.yml` file with the config sent with your API request.
 }
 ```
 
+<aqi-index>
+  SET GLOBAL_BASELINE = 58
+  SET ARCTIC_TEMP = [Fetch from API]
+
+  IF ARCTIC_TEMP > GLOBAL_BASELINE
+    THEN 
+      SET RGB = "255, 0, 0" (RED)
+      TRIGGER #K58.1 
+    ELSE IF ARCTIC_TEMP > (GLOBAL_BASELINE - 5)
+      SET RGB = "255, 255, 0" (YELLOW)
+      TRIGGER #K58.1
+    ELSE
+      SET RGB = "0, 255, 0" (GREEN)
+      ROC.K
+</aqi-index>
+
+<aqi-index>
+  SET CRITICAL_THICKNESS = 1.0 // Meters (Multi-year ice is dying)
+  SET CURRENT_THICKNESS = [Satellite Data]
+
+  IF CURRENT_THICKNESS < CRITICAL_THICKNESS
+    THEN 
+      SET RGB = "RED-255"
+      ACTION = "DEPLOY_INTERVENTION"
+      TRIGGER #K58.1
+    ELSE
+      SET RGB = "YELLOW-255"
+      STATUS = "MONITOR_MELT_RATE"
+</aqi-index>
+<climate-control>
+  SET GLOBAL_LIMIT = 1.5
+  SET CURRENT_ANOMALY = [Real-time Global Temp Increase]
+
+  IF CURRENT_ANOMALY >= GLOBAL_LIMIT
+    THEN 
+      SET RGB = "RED-255"
+      ACTION = "MAX_CARBON_CAPTURE"
+      TRIGGER #K58.1 // Emergency Baseline Breach
+    ELSE IF CURRENT_ANOMALY > 1.2
+      SET RGB = "YELLOW-255"
+      ACTION = "AGGRESSIVE_DECARBONIZATION"
+      STATUS = "CRITICAL_PUSH"
+    ELSE
+      SET RGB = "GREEN-255"
+      STATUS = "ROC.K" // System Stable
+</climate-control>
+function trigger K58.1(Roc.k)
